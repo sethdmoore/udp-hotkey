@@ -1,4 +1,4 @@
-package server
+package application
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 	"github.com/sethdmoore/serial-hotkey/windows"
 )
 
-func Start() {
+func ServerStart() {
 
 	serialPort := "COM1"
 
