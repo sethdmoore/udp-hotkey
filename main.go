@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/sethdmoore/serial-hotkey/server"
+	"github.com/sethdmoore/serial-hotkey/server_windows"
 )
 
 func main() {
