@@ -1,6 +1,7 @@
 package application
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -13,7 +14,7 @@ import (
 	"github.com/sethdmoore/serial-hotkey/windows"
 )
 
-func ServerStart() {
+func ServerStart() error {
 
 	serialPort := "COM1"
 
@@ -81,7 +82,7 @@ func ServerStart() {
 
 			if id == 3 { // CTRL+ALT+X = Exit
 				fmt.Println("CTRL+ALT+X pressed, goodbye...")
-				return
+				return nil
 			}
 		} else {
 			spew.Dump(msg)
@@ -94,4 +95,5 @@ func ServerStart() {
 
 		time.Sleep(time.Millisecond * 50)
 	}
+	return errors.New("The main loop exited")
 }
