@@ -45,7 +45,7 @@ func NewHotKey(id int, modifiers int, keycode int) *hotKey {
 	if err != nil {
 		log.Fatalf("Error: problem mapping Windows key %d to Linux: .. %v", h.KeyCode, err)
 	}
-	h.KeySerial = fmt.Sprintf("%s%c", mod, h.KeyLinux)
+	h.KeySerial = fmt.Sprintf("%s%d", mod, h.KeyLinux)
 	h.KeyWindowsString = fmt.Sprintf("%s%c", mod, h.KeyCode)
 
 	return &h
@@ -57,7 +57,7 @@ func init() {
 
 	Keys = map[int16]*hotKey{
 		//1: &Hotkey{1, windows.ModAlt + windows.ModCtrl, 'O'},  // ALT+CTRL+O
-		1: NewHotKey(1, windows.ModAlt+windows.ModCtrl, 'O'),  // ALT+CTRL+O
+		1: NewHotKey(1, windows.ModCtrl, 'O'),                 // ALT+CTRL+O
 		2: NewHotKey(2, windows.ModAlt+windows.ModShift, 'M'), // ALT+SHIFT+M
 		3: NewHotKey(3, windows.ModAlt+windows.ModCtrl, 'X'),  // ALT+CTRL+X
 		//4: &Hotkey{4, ModNoRepeat + ModAlt, 127},
