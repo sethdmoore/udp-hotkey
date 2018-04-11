@@ -13,6 +13,10 @@ import (
 	"github.com/sethdmoore/serial-hotkey/windows"
 )
 
+func ClientStart() error {
+	return errors.New("Client unavailable on this platform")
+}
+
 func ServerStart() error {
 
 	serialPort := "COM1"
