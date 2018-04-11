@@ -10,7 +10,6 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/sethdmoore/serial-hotkey/hotkeys"
 	"github.com/sethdmoore/serial-hotkey/serial"
-	"github.com/sethdmoore/serial-hotkey/util"
 	"github.com/sethdmoore/serial-hotkey/windows"
 )
 
@@ -44,15 +43,9 @@ func ServerStart() error {
 		if id := msg.WPARAM; id != 0 {
 			keystate.KeyCode = keys[id].KeyCode
 
-			linuxkey, err := util.WinKeyToLinux(keystate.KeyCode)
-			if err != nil {
-				log.Printf("Warning: problem mapping Windows key %d to Linux: .. %v", keystate.KeyCode, err)
-				continue
-			}
-
 			if keys[id].Modifiers&windows.ModNoRepeat != 0 {
 				log.Printf("Key %d being held...\n", keystate.KeyCode)
-				_, err := port.Write([]byte(fmt.Sprintf("down:%d\n", linuxkey)))
+				_, err := port.Write([]byte(fmt.Sprintf("down:%s\n", keys[id].KeySerial)))
 				if err != nil {
 					log.Fatalf("port.Write: %v", err)
 				}
@@ -63,7 +56,7 @@ func ServerStart() error {
 					if r1 == 0 {
 						log.Printf("Key %d released!\n", keystate.KeyCode)
 
-						_, err := port.Write([]byte(fmt.Sprintf("up:%d\n", linuxkey)))
+						_, err := port.Write([]byte(fmt.Sprintf("up:%s\n", keys[id].KeySerial)))
 						if err != nil {
 							log.Fatalf("port.Write: %v", err)
 						}
@@ -74,7 +67,7 @@ func ServerStart() error {
 
 			} else {
 				fmt.Println("Hotkey pressed:", keys[id])
-				_, err := port.Write([]byte(fmt.Sprintf("press:%d\n", linuxkey)))
+				_, err := port.Write([]byte(fmt.Sprintf("press:%s\n", keys[id].KeySerial)))
 				if err != nil {
 					log.Fatalf("port.Write: %v", err)
 				}
