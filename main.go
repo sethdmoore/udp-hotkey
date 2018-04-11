@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"runtime"
-
 	"github.com/sethdmoore/serial-hotkey/application"
+	"runtime"
 )
 
 func main() {
@@ -14,6 +13,10 @@ func main() {
 	if runtime.GOOS == "windows" {
 		application.ServerStart()
 	} else {
-		fmt.Println("client mode not implemented yet")
+		fmt.Printf("Starting...\n")
+		err := application.ClientStart()
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+		}
 	}
 }
