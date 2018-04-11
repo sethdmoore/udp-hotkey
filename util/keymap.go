@@ -26,3 +26,7 @@ func WinKeyToLinux(key int) (int, error) {
 	}
 	return -1, errors.New(fmt.Sprintf("Key ID %d does not map to any named Windows virtual key :(", key))
 }
+
+func KeyToByteArray() []byte {
+	return []byte{}
+}
