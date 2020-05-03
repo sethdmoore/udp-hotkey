@@ -64,7 +64,7 @@ func ClientStart() error {
 
 	time.Sleep(2 * time.Second)
 
-	t, err := tail.TailFile("/tmp/windowsfile", tail.Config{Follow: true, Location: &tail.SeekInfo{0, os.SEEK_END}})
+	t, err := tail.TailFile("/tmp/windows", tail.Config{Follow: true, Location: &tail.SeekInfo{0, os.SEEK_END}})
 	if err != nil {
 		return err
 	}
