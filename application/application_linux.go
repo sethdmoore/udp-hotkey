@@ -17,11 +17,11 @@ const (
 	PRESS   = "press"
 )
 
-func ServerStart() error {
+func ServerStart(serialPort string) error {
 	return errors.New("Server unavailable on this platform")
 }
 
-func parseText(input string, k *keybd_event.KeyBonding) (string, error) {
+func parseText(input string, k *keybd_event.KeyBinding) (string, error) {
 	input_list := strings.Split(input, ":")
 	if len(input_list) != 2 {
 		return "", errors.New("Input was not a valid command")
@@ -57,7 +57,7 @@ func parseText(input string, k *keybd_event.KeyBonding) (string, error) {
 
 func ClientStart() error {
 	//t, err := tail.TailFile("")
-	kb, err := keybd_event.NewKeyBonding()
+	kb, err := keybd_event.NewKeyBinding()
 	if err != nil {
 		return err
 	}

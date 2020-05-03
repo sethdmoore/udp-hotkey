@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/sethdmoore/serial-hotkey/application"
 	"runtime"
+
+	"github.com/sethdmoore/serial-hotkey/application"
 )
 
 func main() {
@@ -11,7 +12,7 @@ func main() {
 	// Lock the main thread so windows doesn't miss messages
 	runtime.LockOSThread()
 	if runtime.GOOS == "windows" {
-		application.ServerStart()
+		application.ServerStart("COM1")
 	} else {
 		fmt.Printf("Starting...\n")
 		err := application.ClientStart()
