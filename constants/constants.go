@@ -2,9 +2,12 @@ package constants
 
 const (
 	// Press for single hotkey press
-	Press = uint8(iota)
+	KeyPress = uint8(iota)
 	// Held for hotkey held
-	Held
+	KeyHeld
 	// Release corresponds to Held, Release hotkey
-	Release
+	KeyRelease
+
+	// Byte size for packet
+	PacketLength = 4
 )
