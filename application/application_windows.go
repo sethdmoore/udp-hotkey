@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"log"
@@ -10,10 +11,11 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/sethdmoore/serial-hotkey/hotkeys"
 	"github.com/sethdmoore/serial-hotkey/serial"
+	"github.com/sethdmoore/serial-hotkey/types"
 	"github.com/sethdmoore/serial-hotkey/windows"
 )
 
-func handleHeldKey(keystate *windows.KeyState, key *hotkeys.HotKey, serial chan<- []byte) {
+func handleHeldKey(keystate *windows.KeyState, key *hotkeys.HotKey, serial chan<- types.Packet) {
 	wincalls := windows.Get()
 	log.Printf("New Thread: Key %d being held...\n", key.KeyCode)
 
@@ -39,8 +41,8 @@ func ClientStart() error {
 	return errors.New("Client unavailable on this platform")
 }
 
-func serialWriter(serialPort string, input <-chan []byte) {
-	var msg []byte
+func serialWriter(serialPort string, input <-chan types.Packet) {
+	var msg types.Packet
 
 	port, err := serial.Connect(serialPort)
 	if err != nil {
@@ -51,7 +53,8 @@ func serialWriter(serialPort string, input <-chan []byte) {
 
 	for {
 		msg = <-input
-		_, err := port.Write(msg)
+		//spew.Dump(msg)
+		err := binary.Write(port, binary.BigEndian, msg)
 
 		if err != nil {
 			log.Fatalf("FATAL: port.Write: %v", err)
@@ -66,7 +69,7 @@ func ServerStart(serialPort string) error {
 	keys := hotkeys.Keys
 	var keystate windows.KeyState
 
-	serialChan := make(chan []byte)
+	serialChan := make(chan types.Packet)
 
 	// thread for serial connection and handling
 	go serialWriter(serialPort, serialChan)

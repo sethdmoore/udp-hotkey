@@ -2,11 +2,11 @@ package hotkeys
 
 import (
 	"bytes"
-	"encoding/binary"
 	"fmt"
 	"log"
 
 	"github.com/sethdmoore/serial-hotkey/constants"
+	"github.com/sethdmoore/serial-hotkey/types"
 	"github.com/sethdmoore/serial-hotkey/util"
 	"github.com/sethdmoore/serial-hotkey/windows"
 )
@@ -14,15 +14,14 @@ import (
 // Hotkey is exported so we can reference fields.
 // It contains all the fields necessary to send hotkeys over the serial wire
 type HotKey struct {
-	//Id               int    // Unique id
-	Modifiers        uint16 // Mask of modifiers, uin16 == 2 bytes
-	KeyCode          uint8  // Key code, e.g. 'A', uint8 == 1 bytes
-	KeyLinux         uint8  // Linux mapping of same hotkey
-	KeySerial        []byte // Single Key combination to send over serial
-	KeyHeldSerial    []byte // Packet for holding key, used with ModNoRepeat
-	KeyReleaseSerial []byte // Packet for releasing key, used with ModNoRepeat
-	KeyWindowsString string // Friendly windows name of key
-	KeyHeld          bool   // Whether the key is held down already
+	Modifiers        uint16       // Mask of modifiers, uin16 == 2 bytes
+	KeyCode          uint8        // Key code, e.g. 'A', uint8 == 1 bytes
+	KeyLinux         uint8        // Linux mapping of same hotkey
+	KeySerial        types.Packet // Single Key combination to send over serial
+	KeyHeldSerial    types.Packet // Packet for holding key, used with ModNoRepeat
+	KeyReleaseSerial types.Packet // Packet for releasing key, used with ModNoRepeat
+	KeyWindowsString string       // Friendly windows name of key
+	KeyHeld          bool         // Whether the key is held down already
 }
 
 // NewHotKey registers a new HotKey struct
@@ -31,12 +30,6 @@ func NewHotKey(modifiers uint16, keycode uint8) *HotKey {
 	var h HotKey
 	var err error
 	mod := &bytes.Buffer{}
-
-	// buf ends up being the packet sent over serial
-	// 0th byte is the mode, see constants/constants.go
-	// 1-2nd byte is the Modifier keys being held, see variables/variables_windows.go
-	// 3rd byte is the linux keycap to act on
-	buf := make([]byte, 4)
 
 	//h.Id = id
 	h.Modifiers = modifiers
@@ -60,31 +53,26 @@ func NewHotKey(modifiers uint16, keycode uint8) *HotKey {
 		log.Fatalf("Error: problem mapping Windows key %d to Linux: .. %v", h.KeyCode, err)
 	}
 
-	// modifiers is uint16, so only 2 bytes
-	binary.BigEndian.PutUint16(buf[1:], h.Modifiers)
-
-	// KeyLinux is uint8, so only 1 byte
-	buf[3] = h.KeyLinux
-
 	// we set the mode last so we can set the struct's Held and Release fields
 	if h.Modifiers&windows.ModNoRepeat != 0 {
-		buf[0] = constants.KeyHeld
+		h.KeyHeldSerial = types.Packet{
+			Action:    constants.KeyHeld,
+			Modifiers: h.Modifiers,
+			KeyCode:   h.KeyLinux,
+		}
 
-		// empty byte slice doesn't want to be copied, has something to do with len(src)
-		// instead, just append the slice ot our
-		h.KeyHeldSerial = append(h.KeyHeldSerial, buf...)
-		//fmt.Printf("ATTN: %x\nCOMP: %x\n", buf, h.KeyHeldSerial)
-
-		buf[0] = constants.KeyRelease
-		// same deal here, using assignment '=' seems to reference a pointer.
-		// Exploit append to structure our packet
-		h.KeyReleaseSerial = append(h.KeyReleaseSerial, buf...)
+		h.KeyReleaseSerial = types.Packet{
+			Action:    constants.KeyRelease,
+			Modifiers: h.Modifiers,
+			KeyCode:   h.KeyLinux,
+		}
 	}
-	// don't worry about pointers here, since this is the final time we
-	// manipulate index 0 of buf
-	buf[0] = constants.KeyPress
 
-	h.KeySerial = buf
+	h.KeySerial = types.Packet{
+		Action:    constants.KeyPress,
+		Modifiers: h.Modifiers,
+		KeyCode:   h.KeyLinux,
+	}
 	// set the human readable version
 
 	h.KeyWindowsString = fmt.Sprintf("%s%c", mod, h.KeyCode)
