@@ -9,6 +9,7 @@ import (
 	"unsafe"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/sethdmoore/serial-hotkey/constants"
 	"github.com/sethdmoore/serial-hotkey/hotkeys"
 	"github.com/sethdmoore/serial-hotkey/serial"
 	"github.com/sethdmoore/serial-hotkey/types"
@@ -87,11 +88,11 @@ func ServerStart(serialPort string) error {
 		if id := msg.WPARAM; id != 0 {
 			keystate.KeyCode = keys[id].KeyCode
 
-			if keys[id].Modifiers&windows.ModNoRepeat != 0 && !keys[id].KeyHeld {
+			if keys[id].Modifiers&constants.ModNoRepeat != 0 && !keys[id].KeyHeld {
 				go handleHeldKey(&keystate, keys[id], serialChan)
 			}
 
-			if keys[id].Modifiers&windows.ModNoRepeat == 0 {
+			if keys[id].Modifiers&constants.ModNoRepeat == 0 {
 				fmt.Printf("Hotkey pressed: %s\n", keys[id].KeyWindowsString)
 				serialChan <- keys[id].KeySerial
 			}

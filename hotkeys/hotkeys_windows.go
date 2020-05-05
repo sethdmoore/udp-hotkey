@@ -35,16 +35,16 @@ func NewHotKey(modifiers uint16, keycode uint8) *HotKey {
 	h.Modifiers = modifiers
 	h.KeyCode = keycode
 
-	if h.Modifiers&windows.ModAlt != 0 {
+	if h.Modifiers&constants.ModAlt != 0 {
 		mod.WriteString("Alt+")
 	}
-	if h.Modifiers&windows.ModCtrl != 0 {
+	if h.Modifiers&constants.ModCtrl != 0 {
 		mod.WriteString("Ctrl+")
 	}
-	if h.Modifiers&windows.ModShift != 0 {
+	if h.Modifiers&constants.ModShift != 0 {
 		mod.WriteString("Shift+")
 	}
-	if h.Modifiers&windows.ModWin != 0 {
+	if h.Modifiers&constants.ModWin != 0 {
 		mod.WriteString("Win+")
 	}
 
@@ -54,7 +54,7 @@ func NewHotKey(modifiers uint16, keycode uint8) *HotKey {
 	}
 
 	// we set the mode last so we can set the struct's Held and Release fields
-	if h.Modifiers&windows.ModNoRepeat != 0 {
+	if h.Modifiers&constants.ModNoRepeat != 0 {
 		h.KeyHeldSerial = types.Packet{
 			Action:    constants.KeyHeld,
 			Modifiers: h.Modifiers,
@@ -88,13 +88,13 @@ var Keys map[int16]*HotKey
 func init() {
 
 	Keys = map[int16]*HotKey{
-		1: NewHotKey(windows.ModCtrl, 'O'),                 // ALT+CTRL+O
-		2: NewHotKey(windows.ModAlt+windows.ModShift, 'M'), // ALT+SHIFT+M
-		3: NewHotKey(windows.ModAlt+windows.ModCtrl, 'X'),  // ALT+CTRL+X
-		4: NewHotKey(windows.ModNoRepeat, 127),
-		5: NewHotKey(windows.ModNoRepeat+windows.ModCtrl, 127),
-		6: NewHotKey(windows.ModNoRepeat+windows.ModShift, 127),
-		7: NewHotKey(windows.ModNoRepeat+windows.ModAlt, 127),
+		1: NewHotKey(constants.ModCtrl, 'O'),                   // ALT+CTRL+O
+		2: NewHotKey(constants.ModAlt+constants.ModShift, 'M'), // ALT+SHIFT+M
+		3: NewHotKey(constants.ModAlt+constants.ModCtrl, 'X'),  // ALT+CTRL+X
+		4: NewHotKey(constants.ModNoRepeat, 127),
+		5: NewHotKey(constants.ModNoRepeat+constants.ModCtrl, 127),
+		6: NewHotKey(constants.ModNoRepeat+constants.ModShift, 127),
+		7: NewHotKey(constants.ModNoRepeat+constants.ModAlt, 127),
 	}
 
 	wincalls := windows.Get()
