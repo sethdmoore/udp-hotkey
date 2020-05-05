@@ -68,21 +68,21 @@ func NewHotKey(modifiers uint16, keycode uint8) *HotKey {
 
 	// we set the mode last so we can set the struct's Held and Release fields
 	if h.Modifiers&windows.ModNoRepeat != 0 {
-		buf[0] = constants.Held
+		buf[0] = constants.KeyHeld
 
 		// empty byte slice doesn't want to be copied, has something to do with len(src)
 		// instead, just append the slice ot our
 		h.KeyHeldSerial = append(h.KeyHeldSerial, buf...)
 		//fmt.Printf("ATTN: %x\nCOMP: %x\n", buf, h.KeyHeldSerial)
 
-		buf[0] = constants.Release
+		buf[0] = constants.KeyRelease
 		// same deal here, using assignment '=' seems to reference a pointer.
 		// Exploit append to structure our packet
 		h.KeyReleaseSerial = append(h.KeyReleaseSerial, buf...)
 	}
 	// don't worry about pointers here, since this is the final time we
 	// manipulate index 0 of buf
-	buf[0] = constants.Press
+	buf[0] = constants.KeyPress
 
 	h.KeySerial = buf
 	// set the human readable version
