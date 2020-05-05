@@ -95,6 +95,7 @@ func init() {
 		5: NewHotKey(constants.ModNoRepeat+constants.ModCtrl, 127),
 		6: NewHotKey(constants.ModNoRepeat+constants.ModShift, 127),
 		7: NewHotKey(constants.ModNoRepeat+constants.ModAlt, 127),
+		//8: NewHotKey(constants.ModAlt, 112),
 	}
 
 	wincalls := windows.Get()
