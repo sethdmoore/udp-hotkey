@@ -7,7 +7,12 @@ const (
 	KeyHeld
 	// Release corresponds to Held, Release hotkey
 	KeyRelease
+)
 
-	// Byte size for packet
-	PacketLength = 4
+const (
+	ModAlt = 1 << uint16(iota)
+	ModCtrl
+	ModShift
+	ModWin
+	ModNoRepeat = uint16(16384)
 )

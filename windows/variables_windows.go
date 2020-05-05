@@ -2,14 +2,6 @@ package windows
 
 import "syscall"
 
-const (
-	ModAlt = 1 << iota
-	ModCtrl
-	ModShift
-	ModWin
-	ModNoRepeat = 16384
-)
-
 type MSG struct {
 	HWND   uintptr
 	UINT   uintptr

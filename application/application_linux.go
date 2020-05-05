@@ -1,26 +1,20 @@
 package application
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/hpcloud/tail"
 	"github.com/sethdmoore/keybd_event"
-	"os"
+	"github.com/sethdmoore/serial-hotkey/constants"
+	"github.com/sethdmoore/serial-hotkey/serial"
+	"github.com/sethdmoore/serial-hotkey/types"
 	"strconv"
 	"strings"
-	"time"
-)
-
-const (
-	HOLD    = "down"
-	RELEASE = "up"
-	PRESS   = "press"
 )
 
 func ServerStart(serialPort string) error {
 	return errors.New("Server unavailable on this platform")
 }
-
 func parseText(input string, k *keybd_event.KeyBinding) (string, error) {
 	input_list := strings.Split(input, ":")
 	if len(input_list) != 2 {
@@ -56,41 +50,43 @@ func parseText(input string, k *keybd_event.KeyBinding) (string, error) {
 }
 
 func ClientStart() error {
-	//t, err := tail.TailFile("")
 	kb, err := keybd_event.NewKeyBinding()
 	if err != nil {
 		return err
 	}
 
-	time.Sleep(2 * time.Second)
+	var packet types.Packet
 
-	t, err := tail.TailFile("/tmp/windows", tail.Config{Follow: true, Location: &tail.SeekInfo{0, os.SEEK_END}})
+	port, err := serial.Connect("/dev/pts/2")
+	// Compose bufio ReadN methods from our serial lib's ReadWriteCloser
+
 	if err != nil {
 		return err
 	}
 
-	time.Sleep(1 * time.Second)
-	fmt.Printf("Debug... no lines..\n")
-	for line := range t.Lines {
-		mode, err := parseText(line.Text, &kb)
+	for {
+		err := binary.Read(port, binary.BigEndian, &packet)
 		if err != nil {
-			fmt.Printf("Warning: %v\n", err)
+			fmt.Printf("ERR: problem reading from serial: %v\n", err)
 			continue
 		}
-		fmt.Printf("line.Text: %s\n", line.Text)
 
-		switch mode {
-		case HOLD:
+		fmt.Printf("DEBUG: %x\n", packet)
+
+		kb.SetKeys(int(packet.KeyCode))
+
+		switch packet.Action {
+		case constants.KeyHeld:
 			err = kb.PressKeys()
 			if err != nil {
 				return err
 			}
-		case RELEASE:
+		case constants.KeyRelease:
 			err = kb.ReleaseKeys()
 			if err != nil {
 				return err
 			}
-		case PRESS:
+		case constants.KeyPress:
 			err = kb.Launching()
 			if err != nil {
 				return err
