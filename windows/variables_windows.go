@@ -20,7 +20,7 @@ type MSG struct {
 }
 
 type KeyState struct {
-	KeyCode int
+	KeyCode uint8
 }
 
 type WindowsCalls struct {

@@ -15,18 +15,18 @@ import (
 
 func handleHeldKey(keystate *windows.KeyState, key *hotkeys.HotKey, serial chan<- []byte) {
 	wincalls := windows.Get()
-	log.Printf("New Thread: Key %d being held...\n", keystate.KeyCode)
+	log.Printf("New Thread: Key %d being held...\n", key.KeyCode)
 
 	// XXX: not sure if this is thread safe to do
 	key.KeyHeld = true
-	serial <- []byte(fmt.Sprintf("down:%s\n", key.KeySerial))
+	serial <- key.KeyHeldSerial
 	for {
 		time.Sleep(10 * time.Millisecond)
 		r1, _, _ := wincalls.KeyState.Call(uintptr(keystate.KeyCode))
 		if r1 == 0 {
 			log.Printf("Key %d released!\n", keystate.KeyCode)
 
-			serial <- []byte(fmt.Sprintf("up:%s\n", key.KeySerial))
+			serial <- key.KeyReleaseSerial
 			break
 		}
 	}
@@ -85,18 +85,12 @@ func ServerStart(serialPort string) error {
 			keystate.KeyCode = keys[id].KeyCode
 
 			if keys[id].Modifiers&windows.ModNoRepeat != 0 && !keys[id].KeyHeld {
-				//fmt.Printf("Creating a new thread...\n")
 				go handleHeldKey(&keystate, keys[id], serialChan)
 			}
 
 			if keys[id].Modifiers&windows.ModNoRepeat == 0 {
-				fmt.Println("Hotkey pressed:", keys[id])
-				serialChan <- []byte(fmt.Sprintf("press:%s\n", keys[id].KeySerial))
-				/*
-					if err != nil {
-						log.Fatalf("port.Write: %v", err)
-					}
-				*/
+				fmt.Printf("Hotkey pressed: %s\n", keys[id].KeyWindowsString)
+				serialChan <- keys[id].KeySerial
 			}
 
 			if id == 3 { // CTRL+ALT+X = Exit

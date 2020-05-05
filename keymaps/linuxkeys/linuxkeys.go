@@ -1,6 +1,6 @@
 package linuxkeys
 
-var Keys map[string]int
+var Keys map[string]uint8
 var Modifiers map[string]int
 
 func init() {
@@ -38,7 +38,7 @@ func init() {
 		"_VK_ALT":        56,
 	}
 
-	Keys = map[string]int{
+	Keys = map[string]uint8{
 		"VK_RESERVED":         0,
 		"VK_ESC":              1,
 		"VK_1":                2,

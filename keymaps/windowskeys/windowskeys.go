@@ -1,7 +1,7 @@
 package windowskeys
 
 var Modifiers = make(map[string]int)
-var Keys map[string]int
+var Keys map[string]uint8
 
 func init() {
 	/*
@@ -37,7 +37,7 @@ func init() {
 		"_KEYEVENTF_KEYUP": 0x0002,
 	}
 
-	Keys = map[string]int{
+	Keys = map[string]uint8{
 		"VK_LBUTTON":             0x01,
 		"VK_RBUTTON":             0x02,
 		"VK_CANCEL":              0x03,
