@@ -8,6 +8,7 @@ import (
 	"github.com/sethdmoore/serial-hotkey/constants"
 	"github.com/sethdmoore/serial-hotkey/serial"
 	"github.com/sethdmoore/serial-hotkey/types"
+	"time"
 )
 
 func ServerStart(serialPort string) error {
@@ -22,7 +23,7 @@ func ClientStart() error {
 
 	var packet types.Packet
 
-	port, err := serial.Connect("/dev/pts/2")
+	port, err := serial.Connect("/dev/pts/1")
 	if err != nil {
 		return err
 	}
@@ -31,6 +32,7 @@ func ClientStart() error {
 		err := binary.Read(port, binary.BigEndian, &packet)
 		if err != nil {
 			fmt.Printf("ERR: problem reading from serial: %v\n", err)
+			time.Sleep(30 * time.Second)
 			continue
 		}
 
