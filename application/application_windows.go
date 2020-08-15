@@ -1,7 +1,7 @@
 package application
 
 import (
-	"encoding/binary"
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"log"
@@ -11,9 +11,10 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/sethdmoore/serial-hotkey/constants"
 	"github.com/sethdmoore/serial-hotkey/hotkeys"
-	"github.com/sethdmoore/serial-hotkey/serial"
+	//"github.com/sethdmoore/serial-hotkey/serial"
 	"github.com/sethdmoore/serial-hotkey/types"
 	"github.com/sethdmoore/serial-hotkey/windows"
+	"net"
 )
 
 func handleHeldKey(keystate *windows.KeyState, key *hotkeys.HotKey, serial chan<- types.Packet) {
@@ -42,20 +43,22 @@ func ClientStart() error {
 	return errors.New("Client unavailable on this platform")
 }
 
-func serialWriter(serialPort string, input <-chan types.Packet) {
+func serialWriter(address string, input <-chan types.Packet) {
 	var msg types.Packet
 
-	port, err := serial.Connect(serialPort)
+	conn, err := net.Dial("udp", address)
+
 	if err != nil {
-		log.Fatalf("Could not connect to %s, %v", serialPort, err)
+		log.Fatalf("Could not connect to %s, %v", address, err)
 	}
 
-	defer port.Close()
+	defer conn.Close()
+	enc := gob.NewEncoder(&conn)
 
 	for {
 		msg = <-input
 		//spew.Dump(msg)
-		err := binary.Write(port, binary.BigEndian, msg)
+		err := enc.Encode(msg)
 
 		if err != nil {
 			log.Fatalf("FATAL: port.Write: %v", err)
@@ -64,7 +67,7 @@ func serialWriter(serialPort string, input <-chan types.Packet) {
 }
 
 // ServerStart starts the hotkey server on Windows
-func ServerStart(serialPort string) error {
+func ServerStart(address string) error {
 	var msg windows.MSG
 	wincalls := windows.Get()
 	keys := hotkeys.Keys
@@ -72,8 +75,8 @@ func ServerStart(serialPort string) error {
 
 	serialChan := make(chan types.Packet)
 
-	// thread for serial connection and handling
-	go serialWriter(serialPort, serialChan)
+	// thread for udp connection and handling
+	go serialWriter(address, serialChan)
 
 	fmt.Println("running")
 

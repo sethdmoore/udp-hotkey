@@ -1,21 +1,24 @@
 package application
 
 import (
-	"encoding/binary"
+	//"encoding/binary"
 	"errors"
 	"fmt"
 	"github.com/sethdmoore/keybd_event"
 	"github.com/sethdmoore/serial-hotkey/constants"
-	"github.com/sethdmoore/serial-hotkey/serial"
+	//"github.com/sethdmoore/serial-hotkey/serial"
+	"bytes"
+	"encoding/gob"
 	"github.com/sethdmoore/serial-hotkey/types"
-	"time"
+	"net"
+	//"time"
 )
 
 func ServerStart(serialPort string) error {
 	return errors.New("Server unavailable on this platform")
 }
 
-func ClientStart() error {
+func ClientStart(serialPath string) error {
 	kb, err := keybd_event.NewKeyBinding()
 	if err != nil {
 		return err
@@ -23,16 +26,31 @@ func ClientStart() error {
 
 	var packet types.Packet
 
-	port, err := serial.Connect("/dev/pts/1")
+	//port, err := serial.Connect(serialPath)
+	conn, err := net.ListenPacket("udp", ":1111")
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
+
+	//buf := &bytes.Buffer{}
+	//var buf bytes.Buffer
+	buf := make([]byte, 512)
+	//reader := bytes.NewReader(&buf)
 
 	for {
-		err := binary.Read(port, binary.BigEndian, &packet)
+		n, _, err := conn.ReadFrom(buf)
+		//gob.Decode(buf)
 		if err != nil {
-			fmt.Printf("ERR: problem reading from serial: %v\n", err)
-			time.Sleep(30 * time.Second)
+			fmt.Printf("ERR: problem reading packet: %v\n", err)
+			continue
+		}
+
+		// All this to decode a buffer into an io.Reader so we can gob.Decode into our packet type
+		// That's kind of complicated. https://stackoverflow.com/a/26150948
+		err = gob.NewDecoder(bytes.NewReader(buf[:n])).Decode(&packet)
+		if err != nil {
+			fmt.Printf("ERR: could not decode packet: %v\n", err)
 			continue
 		}
 
