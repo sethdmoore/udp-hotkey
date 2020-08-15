@@ -1,6 +1,7 @@
 package application
 
 import (
+	"bytes"
 	"encoding/gob"
 	"errors"
 	"fmt"
@@ -39,7 +40,7 @@ func handleHeldKey(keystate *windows.KeyState, key *hotkeys.HotKey, serial chan<
 }
 
 // ClientStart should never be called from Windows as it is not supported
-func ClientStart() error {
+func ClientStart(_ string) error {
 	return errors.New("Client unavailable on this platform")
 }
 
@@ -53,13 +54,25 @@ func serialWriter(address string, input <-chan types.Packet) {
 	}
 
 	defer conn.Close()
-	enc := gob.NewEncoder(&conn)
+
+	//var buf bytes.Buffer
 
 	for {
 		msg = <-input
-		//spew.Dump(msg)
-		err := enc.Encode(msg)
+		// Must reinitialize the byte buffer and the encoder
+		// otherwise the buffer continues to fill
+		var buf bytes.Buffer
+		enc := gob.NewEncoder(&buf)
 
+		//err = gob.NewEncoder(&buf).Encode(msg)
+		err = enc.Encode(msg)
+		if err != nil {
+			log.Fatalf("Could not encode packet into message: %v", err)
+		}
+		//spew.Dump(msg)
+		//fmt.Println(buf)
+		//spew.Dump(msg)
+		_, err := conn.Write(buf.Bytes())
 		if err != nil {
 			log.Fatalf("FATAL: port.Write: %v", err)
 		}
