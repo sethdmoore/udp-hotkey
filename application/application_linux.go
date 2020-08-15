@@ -9,6 +9,7 @@ import (
 	//"github.com/sethdmoore/serial-hotkey/serial"
 	"bytes"
 	"encoding/gob"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/sethdmoore/serial-hotkey/types"
 	"net"
 	//"time"
@@ -35,7 +36,7 @@ func ClientStart(serialPath string) error {
 
 	//buf := &bytes.Buffer{}
 	//var buf bytes.Buffer
-	buf := make([]byte, 512)
+	buf := make([]byte, 1024)
 	//reader := bytes.NewReader(&buf)
 
 	for {
@@ -67,6 +68,8 @@ func ClientStart(serialPath string) error {
 		if packet.Modifiers&constants.ModShift != 0 {
 			kb.HasSHIFT(true)
 		}
+
+		spew.Dump(packet)
 
 		kb.SetKeys(int(packet.KeyCode))
 
