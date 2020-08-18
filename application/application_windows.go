@@ -12,7 +12,6 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/sethdmoore/serial-hotkey/constants"
 	"github.com/sethdmoore/serial-hotkey/hotkeys"
-	//"github.com/sethdmoore/serial-hotkey/serial"
 	"github.com/sethdmoore/serial-hotkey/types"
 	"github.com/sethdmoore/serial-hotkey/windows"
 	"net"
@@ -44,8 +43,7 @@ func ClientStart(_ string) error {
 	return errors.New("Client unavailable on this platform")
 }
 
-func serialWriter(address string, input <-chan types.Packet) {
-	var msg types.Packet
+func packetWriter(address string, input <-chan types.Packet) {
 
 	conn, err := net.Dial("udp", address)
 
@@ -58,10 +56,14 @@ func serialWriter(address string, input <-chan types.Packet) {
 	//var buf bytes.Buffer
 
 	for {
+		var msg types.Packet
+		var buf bytes.Buffer
+
 		msg = <-input
+		spew.Dump(msg)
+
 		// Must reinitialize the byte buffer and the encoder
 		// otherwise the buffer continues to fill
-		var buf bytes.Buffer
 		enc := gob.NewEncoder(&buf)
 
 		//err = gob.NewEncoder(&buf).Encode(msg)
@@ -89,7 +91,7 @@ func ServerStart(address string) error {
 	serialChan := make(chan types.Packet)
 
 	// thread for udp connection and handling
-	go serialWriter(address, serialChan)
+	go packetWriter(address, serialChan)
 
 	fmt.Println("running")
 
