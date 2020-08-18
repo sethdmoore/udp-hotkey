@@ -25,8 +25,6 @@ func ClientStart(serialPath string) error {
 		return err
 	}
 
-	var packet types.Packet
-
 	//port, err := serial.Connect(serialPath)
 	conn, err := net.ListenPacket("udp", ":1111")
 	if err != nil {
@@ -34,14 +32,14 @@ func ClientStart(serialPath string) error {
 	}
 	defer conn.Close()
 
-	//buf := &bytes.Buffer{}
-	//var buf bytes.Buffer
-	buf := make([]byte, 1024)
-	//reader := bytes.NewReader(&buf)
-
 	for {
+		// If you don't reinit the packet type, it will keep previous fields
+		// EG: action will be set to the last packet
+		var packet types.Packet
+		// Same with buf, ensure all data is reinitialized
+		buf := make([]byte, 1024)
 		n, _, err := conn.ReadFrom(buf)
-		//gob.Decode(buf)
+
 		if err != nil {
 			fmt.Printf("ERR: problem reading packet: %v\n", err)
 			continue
@@ -49,6 +47,9 @@ func ClientStart(serialPath string) error {
 
 		// All this to decode a buffer into an io.Reader so we can gob.Decode into our packet type
 		// That's kind of complicated. https://stackoverflow.com/a/26150948
+
+		// Create a Reader from slice of buf, len of n (packet len bytes)
+		// Decode into a reference to Packet tyupe
 		err = gob.NewDecoder(bytes.NewReader(buf[:n])).Decode(&packet)
 		if err != nil {
 			fmt.Printf("ERR: could not decode packet: %v\n", err)
