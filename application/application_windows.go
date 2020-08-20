@@ -17,24 +17,32 @@ import (
 	"net"
 )
 
+// handleHeldKey watches for a key to be released by polling the w32API keymap on an interval
+// when released, it uses the chan to send a release action packet
 func handleHeldKey(keystate *windows.KeyState, key *hotkeys.HotKey, serial chan<- types.Packet) {
 	wincalls := windows.Get()
 	log.Printf("New Thread: Key %d being held...\n", key.KeyCode)
 
 	// XXX: not sure if this is thread safe to do
+	// XXX: but also not sure if it's physically possible to double hold a hot key
 	key.KeyHeld = true
+	// write the keycode to the channel
 	serial <- key.KeyHeldSerial
+	// watch and wait for release
 	for {
 		time.Sleep(10 * time.Millisecond)
+		// poll the keymap API, we only care about r1
 		r1, _, _ := wincalls.KeyState.Call(uintptr(keystate.KeyCode))
+		// some W32API C lib weirdness with multiple return. r1 is what we want
 		if r1 == 0 {
 			log.Printf("Key %d released!\n", keystate.KeyCode)
-
 			serial <- key.KeyReleaseSerial
+			// essentially kill the thread
 			break
 		}
 	}
 	// XXX: not sure about doing this
+	// XXX: but you'd probably need multiple keyboards in order to break it...
 	key.KeyHeld = false
 }
 
@@ -55,9 +63,13 @@ func packetWriter(address string, input <-chan types.Packet) {
 
 	//var buf bytes.Buffer
 
+	var buf bytes.Buffer
+	var msg types.Packet
+
 	for {
-		var msg types.Packet
-		var buf bytes.Buffer
+		// reset variables so we don't leave garbage lying around
+		buf = bytes.Buffer{}
+		msg = types.Packet{}
 
 		msg = <-input
 		spew.Dump(msg)
@@ -106,10 +118,13 @@ func ServerStart(address string) error {
 		if id := msg.WPARAM; id != 0 {
 			keystate.KeyCode = keys[id].KeyCode
 
+			// handle holding hotkeys with a thread
+			// this way we don't block execution while waiting for the key to be released
 			if keys[id].Modifiers&constants.ModNoRepeat != 0 && !keys[id].KeyHeld {
 				go handleHeldKey(&keystate, keys[id], serialChan)
 			}
 
+			// handle single fire hotkeys
 			if keys[id].Modifiers&constants.ModNoRepeat == 0 {
 				fmt.Printf("Hotkey pressed: %s\n", keys[id].KeyWindowsString)
 				serialChan <- keys[id].KeySerial
