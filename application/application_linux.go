@@ -32,10 +32,12 @@ func ClientStart(serialPath string) error {
 	}
 	defer conn.Close()
 
+	var packet types.Packet
 	for {
 		// If you don't reinit the packet type, it will keep previous fields
 		// EG: action will be set to the last packet
-		var packet types.Packet
+		packet = types.Packet{}
+
 		// Same with buf, ensure all data is reinitialized
 		buf := make([]byte, 1024)
 		n, _, err := conn.ReadFrom(buf)
