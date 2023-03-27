@@ -1,0 +1,6 @@
+github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/sethdmoore/keybd_event v0.0.0-20200503224422-de01b8915397 h1:huFLnVZ+o4oBVTk4kGcsZeW1DCLtz+sAIWx2RUo1mmA=
+github.com/sethdmoore/keybd_event v0.0.0-20200503224422-de01b8915397/go.mod h1:7PK20B05bjiUExRQy+rupagDuEiq6rLxbYMPyEotG4k=
+github.com/sethdmoore/serial-hotkey v0.0.0-20200922143234-0ed2cd2d05e9 h1:MJrJrcV5xJxdtqPfVz9O7fDGH24H1VygEmGL37r7qoI=
+github.com/sethdmoore/serial-hotkey v0.0.0-20200922143234-0ed2cd2d05e9/go.mod h1:3IUt92UBXp6inp7ryBEkrvQIhuCFC2WscbJaCo+H2Y4=
